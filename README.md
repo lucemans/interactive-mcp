@@ -157,10 +157,11 @@ pnpm start
 
 The `interactive-mcp` server accepts the following command-line options. These should typically be configured in your MCP client's JSON settings by adding them directly to the `args` array (see "Client Configuration" examples).
 
-| Option            | Alias | Description                                                                                                                                                                                           |
-| ----------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--timeout`       | `-t`  | Sets the default timeout (in seconds) for user input prompts. Defaults to 30 seconds.                                                                                                                 |
-| `--disable-tools` | `-d`  | Disables specific tools or groups (comma-separated list). Prevents the server from advertising or registering them. Options: `request_user_input`, `message_complete_notification`, `intensive_chat`. |
+| Option            | Alias | Description                                                                                                                                                                                                                                                          |
+| ----------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--timeout`       | `-t`  | Sets the default timeout (in seconds) for user input prompts. Defaults to 30 seconds.                                                                                                                                                                                |
+| `--disable-tools` | `-d`  | Disables specific tools or groups (comma-separated list). Options: `request_user_input`, `message_complete_notification`, `intensive_chat`.                                                                                                                          |
+| `--terminal`      |       | Overrides the Linux terminal command template used for UI prompts. Accepts preset names (e.g. `console`, `gnome-terminal`) or a custom command containing `{command}`. Falls back to `$INTERACTIVE_MCP_TERMINAL`, `$TERMINAL`, then `konsole -e bash -lc {command}`. |
 
 **Example:** Setting multiple options in the client config `args` array:
 
