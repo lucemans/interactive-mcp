@@ -5,6 +5,11 @@ import fs from 'fs/promises';
 import os from 'os';
 import crypto from 'crypto';
 import logger from '../../utils/logger.js';
+import {
+  buildTerminalShellCommand,
+  resolveTerminalLaunchConfig,
+  TerminalLaunchConfig,
+} from '../../utils/terminal-launcher.js';
 
 // Get the directory name of the current module
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -50,6 +55,7 @@ async function createSessionDir(): Promise<string> {
 export async function startIntensiveChatSession(
   title: string,
   timeoutSeconds?: number,
+  terminalConfig?: TerminalLaunchConfig,
 ): Promise<string> {
   // Create a session directory
   const sessionDir = await createSessionDir();
@@ -148,8 +154,15 @@ export async function startIntensiveChatSession(
       windowsHide: false,
     });
   } else {
-    // Linux or other - use original method (might not pop up window)
-    childProcess = spawn(process.execPath, [uiScriptPath, payload], {
+    // Linux or other - spawn in user preferred terminal
+    const config = terminalConfig ?? resolveTerminalLaunchConfig();
+    const shellCommand = buildTerminalShellCommand(config, [
+      process.execPath,
+      uiScriptPath,
+      payload,
+    ]);
+
+    childProcess = spawn(shellCommand, [], {
       stdio: ['ignore', 'ignore', 'ignore'],
       shell: true,
       detached: true,

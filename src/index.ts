@@ -19,6 +19,7 @@ import { messageCompleteNotificationTool } from './tool-definitions/message-comp
 import { intensiveChatTools } from './tool-definitions/intensive-chat.js';
 // Import the types for better type checking
 import { ToolCapabilityInfo } from './tool-definitions/types.js';
+import { resolveTerminalLaunchConfig } from './utils/terminal-launcher.js';
 
 // --- Define Type for Tool Capabilities --- (Adjusted to use ToolCapabilityInfo)
 type ToolCapabilitiesStructure = Record<string, ToolCapabilityInfo>;
@@ -49,6 +50,11 @@ const argv = yargs(hideBin(process.argv))
       'Comma-separated list of tool names to disable. Available options: request_user_input, message_complete_notification, intensive_chat (disables all intensive chat tools).',
     default: '',
   })
+  .option('terminal', {
+    type: 'string',
+    description:
+      'Terminal command template used to launch UI prompts on Linux. Provide a preset (console, gnome-terminal, etc.) or a custom command containing {command}. Defaults to $INTERACTIVE_MCP_TERMINAL, $TERMINAL, or konsole.',
+  })
   .help()
   .alias('help', 'h')
   .parseSync();
@@ -58,6 +64,9 @@ const disabledTools = argv['disable-tools']
   .split(',')
   .map((tool) => tool.trim())
   .filter(Boolean);
+const terminalLaunchConfig = resolveTerminalLaunchConfig(
+  argv.terminal as string | undefined,
+);
 
 // Store active intensive chat sessions
 const activeChatSessions = new Map<string, string>();
@@ -127,6 +136,7 @@ if (isToolEnabled('request_user_input')) {
         globalTimeoutSeconds,
         true,
         predefinedOptions,
+        terminalLaunchConfig,
       );
 
       // Check for the specific timeout indicator
@@ -194,6 +204,7 @@ if (isToolEnabled('start_intensive_chat')) {
         const sessionId = await startIntensiveChatSession(
           sessionTitle,
           globalTimeoutSeconds,
+          terminalLaunchConfig,
         );
 
         // Track this session for the client

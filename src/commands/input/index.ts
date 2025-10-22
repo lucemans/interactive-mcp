@@ -8,6 +8,11 @@ import crypto from 'crypto';
 // Updated import to use @ alias
 import { USER_INPUT_TIMEOUT_SECONDS } from '@/constants.js'; // Import the constant
 import logger from '../../utils/logger.js';
+import {
+  buildTerminalShellCommand,
+  resolveTerminalLaunchConfig,
+  TerminalLaunchConfig,
+} from '../../utils/terminal-launcher.js';
 
 // Get the directory name of the current module
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -41,6 +46,7 @@ export async function getCmdWindowInput(
   timeoutSeconds: number = USER_INPUT_TIMEOUT_SECONDS, // Use constant as default
   showCountdown: boolean = true,
   predefinedOptions?: string[],
+  terminalConfig?: TerminalLaunchConfig,
 ): Promise<string> {
   // Create a temporary file for the detached process to write to
   const sessionId = crypto.randomBytes(8).toString('hex');
@@ -152,8 +158,14 @@ export async function getCmdWindowInput(
           });
         } else {
           // Linux or other
-          // Pass only the sessionId
-          ui = spawn(process.execPath, [uiScriptPath, sessionId], {
+          const config = terminalConfig ?? resolveTerminalLaunchConfig();
+          const shellCommand = buildTerminalShellCommand(config, [
+            process.execPath,
+            uiScriptPath,
+            sessionId,
+          ]);
+
+          ui = spawn(shellCommand, [], {
             stdio: ['ignore', 'ignore', 'ignore'],
             shell: true,
             detached: true,
